@@ -1,0 +1,4 @@
+//core package
+Web browsers have a security feature called the "same-origin policy." This policy restricts web pages from making requests to a different domain than the one that served the web page.   
+For example, if your web application is running on domainA.com, it's generally blocked from making direct requests to an API server running on domainB.com.
+CORS is a mechanism that allows servers to selectively relax this same-origin policy, enabling cross-origin requests.
