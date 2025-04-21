@@ -2,3 +2,9 @@
 Web browsers have a security feature called the "same-origin policy." This policy restricts web pages from making requests to a different domain than the one that served the web page.   
 For example, if your web application is running on domainA.com, it's generally blocked from making direct requests to an API server running on domainB.com.
 CORS is a mechanism that allows servers to selectively relax this same-origin policy, enabling cross-origin requests.
+------// all the status codes------
+Informational responses (100 – 199)
+Successful responses (200 – 299)
+Redirection messages (300 – 399)
+Client error responses (400 – 499)
+Server error responses (500 – 599)
