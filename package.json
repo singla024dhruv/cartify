@@ -4,16 +4,25 @@
   "description": "buidingn a scalable backend project",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "start": "nodemon index.js"
   },
   "author": "Dhruv Singla",
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "^3.0.2",
+    "bull": "^4.16.5",
+    "connect-redis": "^8.0.3",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
-    "mongoose": "^8.13.2"
+    "express-async-handler": "^1.2.0",
+    "express-session": "^1.18.1",
+    "mongoose": "^8.13.2",
+    "redis": "^4.7.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^7.1.0"
   }
 }

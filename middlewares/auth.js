@@ -7,7 +7,7 @@ authorised to do so*/
 const jwt = require('jsonwebtoken');
 const verifyToken = (req, res, next) => {
     const authHeader = req.headers.authorization;
-    console.log(authHeader);
+    // console.log(authHeader);
     // it grabs the authorization header from the incoming HTTP request
     //Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
     //now it is  authHeader: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."

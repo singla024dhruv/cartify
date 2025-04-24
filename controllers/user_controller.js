@@ -1,10 +1,16 @@
 const User = require('../models/user');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-module.exports.SignUp = async function (req, res) {
+const asynchandler = require('express-async-handler');
+const redisClient = require('../config/redis');
+
+const activityQueue = require('../config/bull');
+
+
+module.exports.SignUp = asynchandler(async function (req, res) {
     console.log(req.body);
     const { username, email, password } = req.body;
-    try {
+   // try {
         const saltrounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltrounds);
         const newUser = new User({ name: username, email: email, password: hashedPassword });
@@ -13,7 +19,12 @@ module.exports.SignUp = async function (req, res) {
             id: newUser._id.toString()
         }, process.env.JWT_SECRET,
             { expiresIn: '3d' }
-        );
+    );
+    await activityQueue.add({
+      userId: user._id,
+      action: "SignUp",
+      Timestamp: new Date(),
+    });
         //res.status(201).send('User registerd successfully');
         res.status(201).json({
             message: "User registered successfully",
@@ -25,16 +36,16 @@ module.exports.SignUp = async function (req, res) {
             },
         });
         console.log(`${username} is registered successfully`);
-    }
-    catch (err) {
-        console.error(err);
-        res.status(500).send('An error occurred');
-    }
-}
-    module.exports.Login = async function (req, res) {
+   // }
+    // catch (err) {
+    //     console.error(err);
+    //     res.status(500).send('An error occurred');
+    // }
+});
+    module.exports.Login = asynchandler(async function (req, res) {
         console.log("hello");
     const { email, password } = req.body;
-    try {
+    // try {
         const user = await User.findOne({ email: email });
         if (user) {
             const ans = await bcrypt.compare(password, user.password);
@@ -46,6 +57,11 @@ module.exports.SignUp = async function (req, res) {
                     process.env.JWT_SECRET,
                     { expiresIn: "3d" }
                 );
+                await activityQueue.add({
+                    userId: user._id,
+                    action: 'login',
+                    Timestamp: new Date()
+                });
                 res.status(201).json({
                     message: "User Logged in successfully",
                     token,
@@ -57,21 +73,41 @@ module.exports.SignUp = async function (req, res) {
                 });
                 console.log(`${user} us logged in successfully`);
             }
-        }
+        // }
     }
-    catch (err)
-    {
-        console.log(err);
-        }
+    // catch (err)
+    // {
+    //     console.log(err);
+    //     }
 
-};
-module.exports.selfdetails = async function (req, res) {
-    try {
-        const user = await User.findById(req.user.id).select('-password');
-        if (!user) return res.status(404).json({ message: 'User not found' });
-        res.json(user);
+});
+module.exports.selfdetails = asynchandler(async function (req, res) {
+    // try {
+    const userId = req.user.id;
+    const cachedUser = await redisClient.get(userId);
+    if (cachedUser) {
+        console.log('cache Hit');
+        return res.status(200).json({
+            source: 'cache',
+            user: JSON.parse(cachedUser),
+        });
     }
-    catch (err) {
-        res.status(500).json({ message: 'Server error' });
-    }
-};
+    console.log("cache miss");
+    const user = await User.findById(userId).select('-password');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    // res.json(user);
+    await activityQueue.add({
+      userId: user._id,
+      action: "get the self details",
+      Timestamp: new Date(),
+    });
+    await redisClient.setEx(userId, 3600, JSON.stringify(user));
+    res.status(200).json({
+        source: 'db',
+        user,
+    });
+    // }
+    // catch (err) {
+    //     res.status(500).json({ message: 'Server error' });
+    // }
+});
